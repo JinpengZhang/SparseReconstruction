@@ -79,17 +79,21 @@ for s = 1:num_subject
                 end
 
 %                 [model,funVal] = LeastR(X_train', y_train, sparsity_factor);
-
-                ssd = sum((repmat(source_patch,[1,size(dictionary_patch,2)]) - dictionary_patch).^2,1);
+                opts=[];
+                rho=0.001;
+                opts.maxIter=5000;
+                [model,funVal]=LeastR(dictionrary_patch,source_patch,rho,opts);
                 
-                % sort similar atom patches from the dictionary
-                [atom_ssd,atom_id] = sort(ssd,'ascend');
-                atom_ssd = atom_ssd(1:3);
-                atom_id = atom_id(1:3);
-                atom_similarity = exp(-atom_ssd/10000);
-                atom_similarity = atom_similarity/sum(atom_similarity);
-                
-                atom_index = dictionary_index(:,atom_id);
+%                 ssd = sum((repmat(source_patch,[1,size(dictionary_patch,2)]) - dictionary_patch).^2,1);
+%                 
+%                 % sort similar atom patches from the dictionary
+%                 [atom_ssd,atom_id] = sort(ssd,'ascend');
+%                 atom_ssd = atom_ssd(1:3);
+%                 atom_id = atom_id(1:3);
+%                 atom_similarity = exp(-atom_ssd/10000);
+%                 atom_similarity = atom_similarity/sum(atom_similarity);
+%                 
+%                 atom_index = dictionary_index(:,atom_id);
                 
                 brush_radius = [2,2,source_spacing(3)-1];
                 patch_weight = zeros(brush_radius*2+1);
@@ -102,8 +106,8 @@ for s = 1:num_subject
                     end
                 end
                 patch = zeros(brush_radius*2+1);
-                for a = 1:numel(atom_id) 
-                    patch = patch + atom_similarity(a)*reshape(atlas(atom_index(1,a),atom_index(2,a)-brush_radius(1):atom_index(2,a)+brush_radius(1),atom_index(3,a)-brush_radius(2):atom_index(3,a)+brush_radius(2),atom_index(4,a)-brush_radius(3):atom_index(4,a)+brush_radius(3)),size(patch));
+                for a = 1:numel(model) 
+                    patch = patch + model(a)*reshape(atlas(dictionary_index(1,a),dictionary_index(2,a)-brush_radius(1):dictionary_index(2,a)+brush_radius(1),dictionary_index(3,a)-brush_radius(2):dictionary_index(3,a)+brush_radius(2),dictionary_index(4,a)-brush_radius(3):dictionary_index(4,a)+brush_radius(3)),size(patch));
                 end
                 
                 tx = sx;
